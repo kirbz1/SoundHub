@@ -7,10 +7,9 @@ Built with Django, React &amp; PostgreSQL.
 - https://medium.com/@fizaashraf37/develop-a-crud-application-using-django-and-react-part-1-2e8927a1e0c8
 
 ## To-do
-- Configure database
 - Implement user models
-- Implement ability for users to login
-- Implement CRUD operations for songs, albums, artists and user ratings
-- Allow users to connect
+- Implement ability for users to login / delete account
+- Implement CRUD operations for user ratings
+- Allow frontend to connect to API
 - Section that displays top-rated music
 - Feed-like section that displays connected users' activity / ratings (maybe global / popular then ability to switch to friends only)
