@@ -1,29 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React from 'react';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import SongList from './components/SongList';
+import SongDetail from './components/SongDetail';
 
-function App() {
-  const [songs, setSongs] = useState([]);
-
-  useEffect(() => {
-    // Fetch songs from Django backend API
-    axios.get('http://localhost:8000/api/songs/')
-      .then(response => setSongs(response.data))
-      .catch(error => console.error('Error fetching songs:', error));
-  }, []);
-
+const App = () => {
   return (
-    <div>
-      <h1>SoundHub</h1>
-      <ul>
-        {songs.map(song => (
-          <li key={song.id}>
-            <strong>{song.title}</strong> by {song.artist.name}
-            {/* Add rating functionality here */}
-          </li>
-        ))}
-      </ul>
-    </div>
+      <Router>
+          <div>
+              <Switch>
+                  <Route path="/" exact component={SongList} />
+                  <Route path="/songs/:id" component={SongDetail} />
+              </Switch>
+          </div>
+      </Router>
   );
-}
+};
 
 export default App;
