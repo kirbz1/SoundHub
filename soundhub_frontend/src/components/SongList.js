@@ -15,7 +15,7 @@ const SongList = () => {
             <h2>Song List</h2>
             <ul>
                 {songs.map(song => (
-                    <li key={song.id}>{song.title} by {song.artist} - Rating: {song.rating}</li>
+                    <li key={song.id}>{song.title} by {song.artist} - Album: {song.album}</li>
                 ))}
             </ul>
         </div>

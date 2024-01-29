@@ -16,8 +16,17 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework import routers
+from soundhub_app import views
+
+router = routers.DefaultRouter()
+router.register(r'artists', views.ArtistView, 'artists')
+router.register(r'albums', views.AlbumView, 'albums')
+router.register(r'songs', views.SongView, 'songs')
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('soundhub_app.urls')),
+    path('api/', include(router.urls)),
 ]
+

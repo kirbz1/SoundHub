@@ -16,7 +16,7 @@ const SongDetail = ({ match }) => {
             <h2>Song Detail</h2>
             <p>Title: {song.title}</p>
             <p>Artist: {song.artist}</p>
-            <p>Rating: {song.rating}</p>
+            <p>Artist: {song.album}</p>
             {/* Add update and delete functionality here */}
         </div>
     );
