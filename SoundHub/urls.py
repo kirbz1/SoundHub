@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
 from soundhub_app import views
+from user_api import views as user_api_views
 
 router = routers.DefaultRouter()
 router.register(r'artists', views.ArtistView, 'artists')
@@ -28,5 +29,6 @@ router.register(r'songs', views.SongView, 'songs')
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
+    path('api/', include('user_api.urls')),
 ]
 

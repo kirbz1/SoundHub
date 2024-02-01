@@ -13,6 +13,17 @@ Removing the 'npm start' warning
 Change React app title and icon
 - https://stackoverflow.com/questions/72254936/how-to-change-the-title-and-icon-in-react-app
 
+Inspo
+- https://musicboard.app/apps
+
+Examples
+- https://reactjsexample.com/tag/apps-tag/
+
+User Authentication with React + Django
+- https://www.youtube.com/watch?v=diB38AvVkHw&ab_channel=Djangoroad
+
+react-bootstrap?
+
 ## To-do
 - Implement user models
 - Implement ability for users to login / delete account
@@ -20,3 +31,8 @@ Change React app title and icon
 - Allow frontend to connect to API
 - Section that displays top-rated music
 - Feed-like section that displays connected users' activity / ratings (maybe global / popular then ability to switch to friends only)
+
+
+## Research
+- What is a serializer
+- Understand user authentication
