@@ -21,10 +21,12 @@ Examples
 
 User Authentication with React + Django
 - https://www.youtube.com/watch?v=diB38AvVkHw&ab_channel=Djangoroad
+- https://github.com/dotja/authentication_app_react_django_rest/tree/main
 
 react-bootstrap?
 
 ## To-do
+- Change login UI to this https://s3-alpha.figma.com/hub/file/2081227952/02778808-2a37-492b-b301-aaf735e22116-cover.png
 - Implement user models
 - Implement ability for users to login / delete account
 - Implement CRUD operations for user ratings
