@@ -29,6 +29,7 @@ Authentication and Authorization (Optional):
 
 Implement authentication and authorization mechanisms if your app requires user accounts and sessions. Flask-Security or Flask-Login can be useful for this.
 
+https://github.com/ahnaf-zamil/flask-react-session-authenticaton-tutorial/blob/master/client/src/pages/LoginPage.tsx
 
 ## To-do
 - Crud operations for songs
