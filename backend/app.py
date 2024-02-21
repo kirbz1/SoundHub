@@ -40,18 +40,58 @@ bcrypt = Bcrypt(app)
 db = SQLAlchemy(app)
 
 class User(db.Model):
-    __tablename__ = "users" #for table name
+    __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String, unique=True, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
     password = db.Column(db.String(30), nullable=False)
+    #convert below into db.Integer[] equivalent (integer array)
+    liked_songs_ids = db.Column(db.ARRAY(db.Integer))
+    album_reviews_ids = db.Column(db.ARRAY(db.Integer))
+    song_reviews_ids = db.Column(db.ARRAY(db.Integer))
 
-class Song(db.Model):
-    __tablename__ = "songs" #for table name
+class Artist(db.Model):
+    __tablename__ = "artists"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100))
+    album_ids = db.Column(db.ARRAY(db.Integer))
+    song_ids = db.Column(db.ARRAY(db.Integer))
+
+class Album(db.Model):
+    __tablename__ = "albums"
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100))
+    year = db.Column(db.String(4))
+    artist_id = db.Column(db.Integer)
+    song_ids = db.Column(db.ARRAY(db.Integer))
+
+class AlbumReview(db.Model):
+    __tablename__ = "albumreviews"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer)
+    album_id = db.Column(db.Integer)
+    rating = db.Column(db.Integer)
+    title = db.Column(db.String(100))
+    body = db.Column(db.String(1000))
+
+class Song(db.Model):
+    __tablename__ = "songs"
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100))
+    year = db.Column(db.String(4))
+    album_id = db.Column(db.Integer)
+    album = db.Column(db.String(100))
+    artist_id = db.Column(db.Integer)
     artist = db.Column(db.String(100))
 
+class SongReview(db.Model):
+    __tablename__ = "songreviews"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer)
+    song_id = db.Column(db.Integer)
+    rating = db.Column(db.Integer)
+    title = db.Column(db.String(100))
+    body = db.Column(db.String(1000))
 
 
 # routing
@@ -127,4 +167,5 @@ def fetch_all_songs():
 
 
 if __name__ == '__main__':
+
     app.run(debug=True)
