@@ -5,6 +5,8 @@ from flask_bcrypt import Bcrypt
 from flask_session import Session
 from dotenv import load_dotenv
 import os
+from datetime import datetime
+from sqlalchemy.exc import SQLAlchemyError
 
 
 
@@ -159,6 +161,17 @@ def get_current_user():
         "email": user.email
     }) 
 
+@app.route("/user/reviews")
+def get_current_user_reviews():
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    user_reviews = Review.query.filter_by(user_id=user_id)
+    user_reviews = [{'id': review.id, 'user': review.user_username, 'date': review.date, 'title': review.title, 'body': review.body, 'rating': review.rating, 'num_likes': review.num_likes} for review in user_reviews]
+    return jsonify(user_reviews)
+
 
 @app.route('/songs')
 def fetch_all_songs():
@@ -174,13 +187,61 @@ def fetch_all_albums():
     albums = sorted(albums, key=lambda x: x['rating'], reverse=True)
     return jsonify(albums), 200
 
-@app.route('/reviews')
-def fetch_all_reviews():
-    reviews = Review.query.all()
-    reviews = [{'id': review.id, 'user': review.user_username, 'date': review.date, 'title': review.title, 'body': review.body, 'rating': review.rating, 'num_likes': review.num_likes} for review in reviews]
-    reviews = sorted(reviews, key=lambda x: x['num_likes'], reverse=True)
-    return jsonify(reviews), 200
+@app.route('/reviews', methods=['GET', 'POST'])
+def handle_get_post_reviews():
+    if request.method == 'GET':
+        reviews = Review.query.all()
+        reviews = [{'id': review.id, 'user': review.user_username, 'date': review.date, 'title': review.title, 'body': review.body, 'rating': review.rating, 'num_likes': review.num_likes} for review in reviews]
+        reviews = sorted(reviews, key=lambda x: x['num_likes'], reverse=True)
+        return jsonify(reviews), 200
+    if request.method == 'POST':
+        user_id = session.get("user_id")
+        print(request.json)
+        if not user_id:
+            return jsonify({"error": "Unauthorized"}), 401
+        
+        username = User.query.filter_by(id=user_id).first().username
+        rating = request.json['rating']
+        title = request.json['reviewTitle']
+        body = request.json['reviewText']
+        
 
+        new_review = Review(user_id=user_id, user_username=username, rating=rating, title=title, body=body, date=datetime.now(), num_likes=0)
+        db.session.add(new_review)
+        db.session.commit()
+        return "200"
+
+@app.route('/reviews/<int:id>', methods=['PUT', 'DELETE'])
+def handle_put_delete_reviews(id):
+    if request.method == 'PUT':
+        review = Review.query.get(id)
+
+        if review:
+            review.body = request.json['reviewText']
+            review.rating = request.json['rating']
+
+            try:
+                db.session.commit()
+                return jsonify({'message': 'Review updated successfully'})
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                return jsonify({'message': 'Failed to update review', 'error': str(e)}), 500
+        else:
+            return jsonify({'message': 'Review not found'}), 404
+
+    if request.method == 'DELETE': 
+        review = Review.query.get(id)
+
+        if review:
+            try:
+                db.session.delete(review)
+                db.session.commit()
+                return jsonify({'message': 'Review deleted successfully'})
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                return jsonify({'message': 'Failed to delete review', 'error': str(e)}), 500
+        else:
+            return jsonify({'message': 'Review not found'}), 404
 
 if __name__ == '__main__':
     app.run(debug=True)

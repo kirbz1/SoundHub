@@ -6,25 +6,14 @@ import Col from 'react-bootstrap/Col';
 import Nav from 'react-bootstrap/Nav';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import Stack from 'react-bootstrap/Stack';
-import Card from 'react-bootstrap/Card';
-import Pagination from 'react-bootstrap/Pagination';
+import Modal from 'react-bootstrap/Modal';
+import { Card, CardGroup } from 'react-bootstrap';
+import { FaTrash, FaPencilAlt } from 'react-icons/fa';
 import httpClient from "../httpClient";
 
 const YourReviews = () => {
+
   const [user, setUser] = useState(null);
-  
-  const [show, setShow] = useState(false);
-
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
-  
-  const submitLogout = async () => {
-    await httpClient.post("/logout");
-    setUser(null);
-    window.location.href = "/";
-  };
-
-
 
   useEffect(() => {
     (async () => {
@@ -37,6 +26,97 @@ const YourReviews = () => {
       }
     })();
   }, []);
+
+  const submitLogout = async () => {
+    await httpClient.post("/logout");
+    setUser(null);
+    window.location.href = "/";
+  };
+
+  const [show, setShow] = useState(false);
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
+
+  const [yourReviews, setYourReviews] = useState([]);
+  useEffect(() => {
+    (async () => {
+      try {
+        const response = await httpClient.get("/user/reviews");
+        setYourReviews(response.data);
+      } catch (error) {
+        console.log("Couldn't fetch '/reviews'.");
+      }
+    })();
+  }, []);
+
+  const[showModal, setShowModal] = useState(false);
+  const handleCloseModal = () => setShowModal(false);
+  const handleShowModal = () => setShowModal(true);
+  
+  const [rating, setRating] = useState(0); // Initial rating is 0 (no stars selected)
+  const [reviewText, setReviewText] = useState('');
+  const [reviewTitle, setReviewTitle] = useState('');
+
+  const handleStarClick = (starValue) => {
+    // If the clicked star is already selected, set rating to 0 (unselect it)
+    // Otherwise, set rating to the value of the clicked star
+    setRating(starValue === rating ? 0 : starValue);
+  };
+
+  const handleReviewTextChange = (event) => {
+    setReviewText(event.target.value);
+  };
+
+  const handleReviewTitleChange = (event) => {
+    setReviewTitle(event.target.value);
+  };
+
+
+  const submitReview = async () => {
+    setShowModal(false);
+    try {
+      await httpClient.post("//localhost:5000/reviews", {
+        rating,
+        reviewText,
+        reviewTitle
+      });
+    window.location.href = "/profile/reviews";
+    } catch (error) {
+      if (error.response.status === 401) {
+        alert("Invalid credentials!");
+      }
+    }
+  };
+
+  const deleteReview = async (id) => {
+    try {
+      await httpClient.delete(`/reviews/${id}`);
+      // Remove the deleted review from the state
+      setYourReviews(yourReviews);
+    } catch (error) {
+      console.error('Error deleting review:', error);
+    }
+  };
+
+  //define showEditModal bool
+  //define editModalTitle, editModalText, editModalRating
+
+  //const showEditModal = async(title, body, rating) => {
+    //show a modal with default entries equal to title, body, rating
+
+  //};
+
+  const editReview = async (id) => {
+    //submit put request with edit modal values
+
+    // try {
+    //   await httpClient.put(`/reviews/${id}`);
+    //   // Remove the deleted review from the state
+    //   setYourReviews(yourReviews.filter(review => review.id !== id));
+    // } catch (error) {
+    //   console.error('Error editing review:', error);
+    // }
+  };
 
   return(    
     <div>
@@ -104,62 +184,90 @@ const YourReviews = () => {
         </Stack>
 
       </Offcanvas>
+      
+      <Modal show={showModal} onHide={handleCloseModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Create Review</Modal.Title>
+        </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
+                <Form.Control
+                  autoFocus
+                  placeholder='Album/Song name...'
+                  onChange={handleReviewTitleChange}
+                />
+              </Form.Group>
+              <Form.Group
+                className="mb-3"
+                controlId="exampleForm.ControlTextarea1"
+              >
+                <Form.Control
+                as="textarea"
+                rows={3}
+                placeholder='Add a review...'
+                value={reviewText}
+                onChange={handleReviewTextChange}
+                />
+              </Form.Group>
+              <div>
+                {[1, 2, 3, 4, 5].map(starValue => (
+                  <span
+                    key={starValue}
+                    onClick={() => handleStarClick(starValue)}
+                    style={{ fontSize: '32px', cursor: 'pointer', color: starValue <= rating ? 'gold' : 'lightgray' }}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
+
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleCloseModal}>
+              Close
+            </Button>
+            <Button variant="primary" onClick={submitReview} >
+              Submit
+            </Button>
+          </Modal.Footer>
+      </Modal>
     
                 <br/>
       <div className='titleContainer'>
             <h4>Your Reviews</h4>
           </div>
+          {/* modals for creating review... */}
           <div className='center'>
             <Stack direction="horizontal" gap={3} style={{width:'500px'}}>
-              <Form.Control className="me-auto" placeholder="Search by song/album..." />
-              <Button variant="secondary" style={{width:'150px'}}>Create Review</Button>
+              <Form.Control className="me-auto" placeholder="Search by title..." />
+              <Button variant="secondary" style={{width:'150px'}} onClick={handleShowModal}>Create Review</Button>
             </Stack>
           </div>
           <div className='center'>
-            {/* add onclick func to <Card ...> */}
-            {/* add img to top of card */}
-            {/* add cardgroup */}
-            {/* https://react-bootstrap.netlify.app/docs/components/cards/#card-groups */}
-            <Card style={{ width: '18rem', marginRight:'10px', marginLeft:'10px', cursor: 'pointer'}} > 
-              <Card.Body>
-                <Card.Title>Song/Album title</Card.Title>
-                <Card.Subtitle className="mb-2 text-muted">Review title + rating</Card.Subtitle>
-              </Card.Body>
-            </Card>
-
-            <Card style={{ width: '18rem', marginRight:'10px', marginLeft:'10px', cursor: 'pointer'}} > 
-              <Card.Body>
-                <Card.Title>Song/Album title</Card.Title>
-                <Card.Subtitle className="mb-2 text-muted">Review title + rating</Card.Subtitle>
-              </Card.Body>
-            </Card>
-
-            <Card style={{ width: '18rem', marginRight:'10px', marginLeft:'10px', cursor: 'pointer'}} > 
-              <Card.Body>
-                <Card.Title>Song/Album title</Card.Title>
-                <Card.Subtitle className="mb-2 text-muted">Review title + rating</Card.Subtitle>
-              </Card.Body>
-            </Card>
-            {/* modals + pagination*/}
-          </div>
-          <div className='center'>
-          <Pagination>
-            <Pagination.First />
-            <Pagination.Prev />
-            <Pagination.Item>{1}</Pagination.Item>
-            <Pagination.Ellipsis />
-
-            <Pagination.Item>{10}</Pagination.Item>
-            <Pagination.Item>{11}</Pagination.Item>
-            <Pagination.Item active>{12}</Pagination.Item>
-            <Pagination.Item>{13}</Pagination.Item>
-            <Pagination.Item disabled>{14}</Pagination.Item>
-
-            <Pagination.Ellipsis />
-            <Pagination.Item>{20}</Pagination.Item>
-            <Pagination.Next />
-            <Pagination.Last />
-          </Pagination>
+            <CardGroup>
+              {yourReviews.map(review => (
+                <Card key={review.id}>
+                  <Card.Body style={{ position: 'relative' }}>
+                    <Card.Title>
+                      {review.title} - {review.rating}/5
+                      <button onClick={() => editReview(review.id, review.title, review.body, review.rating)} style={{ position: 'absolute', bottom: 12, right: 50, fontSize: '15px'}}>
+                        <FaPencilAlt /> {/* Use the trash bin icon */}
+                      </button>
+                      <button onClick={() => deleteReview(review.id)} style={{ position: 'absolute', bottom: 12, right: 10, fontSize: '15px'}}>
+                        <FaTrash /> {/* Use the trash bin icon */}
+                      </button>
+                    </Card.Title>
+                    
+                    <Card.Subtitle>By {review.user} ({review.date})</Card.Subtitle>
+                    <Card.Text>{review.body}</Card.Text>
+                    <Card.Subtitle>{review.num_likes} likes</Card.Subtitle>
+                  </Card.Body>
+                </Card>
+              ))}
+            </CardGroup>
+            {/*pagination for excess number of reviews?*/}
           </div>
 
             
