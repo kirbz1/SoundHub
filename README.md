@@ -6,6 +6,7 @@ Built with Flask, React &amp; PostgreSQL.
 ## Resources
 
 ## To-do
+- Move routing / models to separate files in backend
 - "Your reviews" for user
 - "Your liked songs" for user
 - "Following" for user

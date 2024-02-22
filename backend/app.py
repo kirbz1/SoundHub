@@ -181,9 +181,6 @@ def fetch_all_reviews():
     reviews = sorted(reviews, key=lambda x: x['num_likes'], reverse=True)
     return jsonify(reviews), 200
 
-with app.app_context():
-    db.create_all()
 
 if __name__ == '__main__':
-
     app.run(debug=True)
