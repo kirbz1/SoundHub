@@ -7,6 +7,7 @@ Built with Flask, React &amp; PostgreSQL.
 
 ## To-do
 - Move routing / models to separate files in backend
+- Move navbar to app.js
 - "Your reviews" for user
 - "Your liked songs" for user
 - "Following" for user
