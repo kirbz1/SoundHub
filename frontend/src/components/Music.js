@@ -9,13 +9,28 @@ import Stack from 'react-bootstrap/Stack';
 import httpClient from "../httpClient";
 
 const Music = () => {
+
   const [user, setUser] = useState(null);
-  
   const [show, setShow] = useState(false);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
-  
+  const [songs, setSongs] = useState([]);
+  const [albums, setAlbums] = useState([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const response = await httpClient.get("/user");
+        setUser(response.data);
+      } catch (error) {
+        console.log("Not authenticated");
+      }
+    })();
+  }, []);
+
+
+
   const submitLogout = async () => {
     await httpClient.post("/logout");
     setUser(null);
@@ -27,14 +42,27 @@ const Music = () => {
   useEffect(() => {
     (async () => {
       try {
-        const response = await httpClient.get("/user");
-        console.log(response.data);
-        setUser(response.data);
+        const response = await httpClient.get("/songs");
+        setSongs(response.data);
       } catch (error) {
-        console.log("Not authenticated");
+        console.log("Couldn't fetch '/songs'.");
       }
     })();
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const response = await httpClient.get("/albums");
+        setAlbums(response.data);
+      } catch (error) {
+        console.log("Couldn't fetch '/albums'.");
+      }
+    })();
+  }, []);
+
+
+
 
   return(    
     <div>
@@ -102,10 +130,49 @@ const Music = () => {
         </Stack>
 
       </Offcanvas>
-      <br />
-        <h5>Music - Stream songs by connecting to spotify...</h5>
-        <h5>Music - view trending songs / or just view all and apply filters</h5>
-      </div>
+
+      <div>
+      <Row>
+        <Col sm={4}>
+          {/* Content for the first column */}
+          <div className='mainContainer'>
+            <h3 className='titleContainer'>Top Albums</h3>
+            <ul>
+              {(typeof albums === 'undefined') ? (
+                <p>Loading albums...</p>
+                ): (
+                  albums.map(album => (
+                    <li key={album.id}>{album.title} by {album.artist} ({album.rating}/5)</li>
+                  ))
+                )}
+            </ul>
+          </div>
+        </Col>
+        <Col sm={4}>
+          {/* Content for the second column */}
+          <div className='mainContainer'>
+            <h3 className='titleContainer'>Top Songs</h3>
+            <ul>
+              {(typeof songs === 'undefined') ? (
+                <p>Loading songs...</p>
+                ): (
+                  songs.map(song => (
+                    <li key={song.id}>{song.title} by {song.artist} ({song.rating}/5)</li>
+                  ))
+                )}
+            </ul>
+          </div>
+        </Col>
+        <Col sm={4}>
+          {/* Content for the second column */}
+          <div className='mainContainer'>
+            <h3 className='titleContainer'>Trending</h3>
+              <p>Define an endpoint to get most popular songs / albums from the past week</p>
+          </div>
+        </Col>
+      </Row>
+    </div>
+    </div>
   )
 }
 

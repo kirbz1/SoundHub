@@ -63,16 +63,23 @@ class Album(db.Model):
     title = db.Column(db.String(100))
     year = db.Column(db.String(4))
     artist_id = db.Column(db.Integer)
+    artist = db.Column(db.String(100))
     song_ids = db.Column(db.ARRAY(db.Integer))
+    rating = db.Column(db.Float)
+    num_ratings = db.Column(db.Integer)
 
-class AlbumReview(db.Model):
-    __tablename__ = "albumreviews"
+class Review(db.Model):
+    __tablename__ = "reviews"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer)
+    user_username = db.Column(db.String)
     album_id = db.Column(db.Integer)
+    song_id = db.Column(db.Integer)
     rating = db.Column(db.Integer)
     title = db.Column(db.String(100))
     body = db.Column(db.String(1000))
+    date = db.Column(db.DateTime)
+    num_likes = db.Column(db.Integer)
 
 class Song(db.Model):
     __tablename__ = "songs"
@@ -83,15 +90,9 @@ class Song(db.Model):
     album = db.Column(db.String(100))
     artist_id = db.Column(db.Integer)
     artist = db.Column(db.String(100))
+    rating = db.Column(db.Float)
+    num_ratings = db.Column(db.Integer)
 
-class SongReview(db.Model):
-    __tablename__ = "songreviews"
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer)
-    song_id = db.Column(db.Integer)
-    rating = db.Column(db.Integer)
-    title = db.Column(db.String(100))
-    body = db.Column(db.String(1000))
 
 
 # routing
@@ -162,9 +163,26 @@ def get_current_user():
 @app.route('/songs')
 def fetch_all_songs():
     songs = Song.query.all()
-    songs = [{'id': song.id, 'title': song.title, 'artist': song.artist} for song in songs]
+    songs = [{'id': song.id, 'title': song.title, 'artist': song.artist, 'rating': song.rating} for song in songs]
+    songs = sorted(songs, key=lambda x: x['rating'], reverse=True)
     return jsonify(songs), 200
 
+@app.route('/albums')
+def fetch_all_albums():
+    albums = Album.query.all()
+    albums = [{'id': album.id, 'title': album.title, 'artist': album.artist, 'rating': album.rating} for album in albums]
+    albums = sorted(albums, key=lambda x: x['rating'], reverse=True)
+    return jsonify(albums), 200
+
+@app.route('/reviews')
+def fetch_all_reviews():
+    reviews = Review.query.all()
+    reviews = [{'id': review.id, 'user': review.user_username, 'date': review.date, 'title': review.title, 'body': review.body, 'rating': review.rating, 'num_likes': review.num_likes} for review in reviews]
+    reviews = sorted(reviews, key=lambda x: x['num_likes'], reverse=True)
+    return jsonify(reviews), 200
+
+with app.app_context():
+    db.create_all()
 
 if __name__ == '__main__':
 

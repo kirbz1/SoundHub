@@ -10,7 +10,6 @@ import httpClient from "../httpClient";
 
 const Home = () => {
 
-  const [songs, setSongs] = useState([])
   const [user, setUser] = useState(null);
   
   const [show, setShow] = useState(false);
@@ -24,16 +23,6 @@ const Home = () => {
     window.location.href = "/";
   };
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const response = await httpClient.get("/songs");
-        setSongs(response.data);
-      } catch (error) {
-        console.log("Couldn't fetch '/songs'.");
-      }
-    })();
-  }, []);
 
   useEffect(() => {
     (async () => {
@@ -115,20 +104,7 @@ const Home = () => {
       </Offcanvas>
 
 
-        <br /> 
-      <div className='center'><h2>Top songs</h2></div>
-      <div className='center'>
-        <ul>
-          {(typeof songs === 'undefined') ? (
-            <p>Loading songs...</p>
-            ): (
-              songs.map(song => (
-                <li key={song.id}>{song.title} by {song.artist}</li>
-              ))
-            )}
-        </ul>
-        
-      </div>
+      <h3 className='mainContainer'>Welcome!</h3>
 
     </div>
   )
