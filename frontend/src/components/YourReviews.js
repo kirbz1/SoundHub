@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Navbar, Container, Button } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import Nav from 'react-bootstrap/Nav';
-import Offcanvas from 'react-bootstrap/Offcanvas';
 import Stack from 'react-bootstrap/Stack';
 import Modal from 'react-bootstrap/Modal';
 import { Card, CardGroup } from 'react-bootstrap';
@@ -12,30 +8,6 @@ import { FaTrash, FaPencilAlt } from 'react-icons/fa';
 import httpClient from "../httpClient";
 
 const YourReviews = () => {
-
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const response = await httpClient.get("/user");
-        console.log(response.data);
-        setUser(response.data);
-      } catch (error) {
-        console.log("Not authenticated");
-      }
-    })();
-  }, []);
-
-  const submitLogout = async () => {
-    await httpClient.post("/logout");
-    setUser(null);
-    window.location.href = "/";
-  };
-
-  const [show, setShow] = useState(false);
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
 
   const [yourReviews, setYourReviews] = useState([]);
   useEffect(() => {
@@ -75,7 +47,7 @@ const YourReviews = () => {
   const submitReview = async () => {
     setShowModal(false);
     try {
-      await httpClient.post("//localhost:5000/reviews", {
+      await httpClient.post("/reviews", {
         rating,
         reviewText,
         reviewTitle
@@ -92,99 +64,61 @@ const YourReviews = () => {
     try {
       await httpClient.delete(`/reviews/${id}`);
       // Remove the deleted review from the state
-      setYourReviews(yourReviews);
+      setYourReviews(yourReviews.filter(review => review.id !== id));
     } catch (error) {
       console.error('Error deleting review:', error);
     }
   };
 
-  //define showEditModal bool
-  //define editModalTitle, editModalText, editModalRating
+  const[showEditModal, setShowEditModal] = useState(false);
+  const handleCloseEditModal = () => setShowEditModal(false);
+  
+  const [editModalTitle, setEditModalTitle] = useState('');
+  const [editModalText, setEditModalText] = useState('');
+  const [editModalRating, setEditModalRating] = useState('');
+  const [editModalID, setEditModalID] = useState(0);
 
-  //const showEditModal = async(title, body, rating) => {
+  const handleEditTextChange = (event) => {
+    setEditModalText(event.target.value);
+  };
+
+  const handleEditTitleChange = (event) => {
+    setEditModalTitle(event.target.value);
+  };
+
+  const handleShowEditModal = async(id, title, body, rating) => {
     //show a modal with default entries equal to title, body, rating
+    setEditModalID(id);
+    setEditModalTitle(title);
+    setEditModalText(body);
+    setEditModalRating(rating);
+    setShowEditModal(true);
+  };
 
-  //};
+  const handleEditStarClick = (starValue) => {
+    // If the clicked star is already selected, set rating to 0 (unselect it)
+    // Otherwise, set rating to the value of the clicked star
+    setEditModalRating(starValue === editModalRating ? 0 : starValue);
+  };
 
   const editReview = async (id) => {
     //submit put request with edit modal values
 
-    // try {
-    //   await httpClient.put(`/reviews/${id}`);
-    //   // Remove the deleted review from the state
-    //   setYourReviews(yourReviews.filter(review => review.id !== id));
-    // } catch (error) {
-    //   console.error('Error editing review:', error);
-    // }
+    try {
+      await httpClient.put(`/reviews/${id}`, {
+        editModalTitle,
+        editModalText,
+        editModalRating
+      });
+      // Remove the deleted review from the state
+      window.location.href = "/profile/reviews";
+    } catch (error) {
+      console.error('Error editing review:', error);
+    }
   };
 
   return(    
-    <div>
-      <Navbar bg="dark" variant="dark" style={{height: '80px'}}>
-        <Container>
-            <a href="http://localhost:3000/" style={{ textDecoration: 'none' }}>
-            <Navbar.Brand style={{fontSize: '32px'}}>SoundHub</Navbar.Brand>
-            </a>
-            <Form inline>
-        <Row>
-          <Col xs="auto">
-            <Form.Control
-              type="text"
-              placeholder="Search"
-              //  (Users / Music) -- make wider / maybe dropdown results that refresh each time user enters text
-              className=" mr-sm-2"
-            />
-          </Col>
-        </Row>
-      </Form>
-      <Nav className="me-auto">
-            <Nav.Link href="/music">Music</Nav.Link>
-            <Nav.Link href="/reviews">Reviews</Nav.Link>
-            <Nav.Link href="/discover">Discover</Nav.Link>
-          </Nav>
-          <Navbar.Toggle />
-          <Navbar.Collapse className="justify-content-end">
-            <Navbar.Text>
-            { user === null ? (
-                <>
-                <a href="http://localhost:3000/login">
-                <Button variant="light" style={{marginRight : '15px', width : '90px'}}>Login</Button>
-                </a>
-                <a href="http://localhost:3000/register">
-                <Button variant="light" style={{marginLeft : '15px', width : '90px'}}>Register</Button>
-                </a>
-                </>
-              ) : (
-              <>
-              <h5 style={{display: 'inline-block', fontSize: '16px', marginRight: '20px'}}>Signed in: <span style={{color:'white', cursor:'pointer', textDecoration: 'underline'}} onClick={handleShow}>{user.email}</span></h5>
-              <Button variant="light" onClick={() => submitLogout()}>Logout</Button> 
-              </>
-              )}
-            </Navbar.Text>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
-      
-      <Offcanvas show={show} onHide={handleClose} placement='end'>
-        
-        <Stack gap={4}>
-          <hr/>
-          <a href="http://localhost:3000/profile/reviews" style={{textDecoration: 'none', marginLeft:'30px', color: 'black'}}><Offcanvas.Title>Your Reviews</Offcanvas.Title></a>
-          <hr/>
-          <a href="http://localhost:3000/profile/liked-songs" style={{textDecoration: 'none', marginLeft:'30px', color: 'black'}}><Offcanvas.Title>Your Liked Songs</Offcanvas.Title></a>
-          <hr/>
-          <a href="http://localhost:3000/profile/following" style={{textDecoration: 'none', marginLeft:'30px', color: 'black'}}><Offcanvas.Title>Following</Offcanvas.Title></a>
-          <hr/>
-          <a href="http://localhost:3000/profile/followers" style={{textDecoration: 'none', marginLeft:'30px', color: 'black'}}><Offcanvas.Title>Followers</Offcanvas.Title></a>
-          <hr/>
-          <a href="http://localhost:3000/profile/connect-spotify" style={{textDecoration: 'none', marginLeft:'30px', color: 'black'}}><Offcanvas.Title>Connect to Spotify</Offcanvas.Title></a>
-          <hr/>
-          <a href="http://localhost:3000/profile/statistics" style={{textDecoration: 'none', marginLeft:'30px', color: 'black'}}><Offcanvas.Title>Statistics</Offcanvas.Title></a>
-          <hr/>
-        </Stack>
-
-      </Offcanvas>
-      
+    <div>    
       <Modal show={showModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
           <Modal.Title>Create Review</Modal.Title>
@@ -233,6 +167,57 @@ const YourReviews = () => {
             </Button>
           </Modal.Footer>
       </Modal>
+
+      <Modal show={showEditModal} onHide={handleCloseEditModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Review</Modal.Title>
+        </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
+                <Form.Control
+                  autoFocus
+                  value={editModalTitle}
+                  placeholder='Album/Song name...'
+                  onChange={handleEditTitleChange}
+                />
+              </Form.Group>
+              <Form.Group
+                className="mb-3"
+                controlId="exampleForm.ControlTextarea1"
+              >
+                <Form.Control
+                as="textarea"
+                rows={3}
+                placeholder='Add a review...'
+                value={editModalText}
+                onChange={handleEditTextChange}
+                />
+              </Form.Group>
+              <div>
+                {[1, 2, 3, 4, 5].map(starValue => (
+                  <span
+                    key={starValue}
+                    onClick={() => handleEditStarClick(starValue)}
+                    style={{ fontSize: '32px', cursor: 'pointer', color: starValue <= editModalRating ? 'gold' : 'lightgray' }}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
+
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleCloseEditModal}>
+              Close
+            </Button>
+            <Button variant="primary" onClick={ () => editReview(editModalID)} >
+              Submit
+            </Button>
+          </Modal.Footer>
+      </Modal>
+      
     
                 <br/>
       <div className='titleContainer'>
@@ -241,7 +226,7 @@ const YourReviews = () => {
           {/* modals for creating review... */}
           <div className='center'>
             <Stack direction="horizontal" gap={3} style={{width:'500px'}}>
-              <Form.Control className="me-auto" placeholder="Search by title..." />
+              <Form.Control className="me-auto" placeholder="Search by title... (not functional yet)" />
               <Button variant="secondary" style={{width:'150px'}} onClick={handleShowModal}>Create Review</Button>
             </Stack>
           </div>
@@ -252,7 +237,7 @@ const YourReviews = () => {
                   <Card.Body style={{ position: 'relative' }}>
                     <Card.Title>
                       {review.title} - {review.rating}/5
-                      <button onClick={() => editReview(review.id, review.title, review.body, review.rating)} style={{ position: 'absolute', bottom: 12, right: 50, fontSize: '15px'}}>
+                      <button onClick={() => handleShowEditModal(review.id, review.title, review.body, review.rating)} style={{ position: 'absolute', bottom: 12, right: 50, fontSize: '15px'}}>
                         <FaPencilAlt /> {/* Use the trash bin icon */}
                       </button>
                       <button onClick={() => deleteReview(review.id)} style={{ position: 'absolute', bottom: 12, right: 10, fontSize: '15px'}}>

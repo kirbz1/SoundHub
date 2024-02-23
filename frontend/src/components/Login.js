@@ -1,9 +1,4 @@
 import React, { useState } from 'react';
-import { Navbar, Container, Button } from 'react-bootstrap';
-import Form from 'react-bootstrap/Form';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import Nav from 'react-bootstrap/Nav';
 import httpClient from "../httpClient";
 
 const Login = () => {
@@ -41,37 +36,6 @@ const Login = () => {
 
   return(    
     <div>
-      <Navbar bg="dark" variant="dark" style={{height: '80px'}}>
-        <Container>
-        <a href="http://localhost:3000/" style={{ textDecoration: 'none' }}>
-            <Navbar.Brand style={{fontSize: '32px'}}>SoundHub</Navbar.Brand>
-            </a>
-            <Form inline>
-        <Row>
-          <Col xs="auto">
-            <Form.Control
-              type="text"
-              placeholder="Search"
-              className=" mr-sm-2"
-            />
-          </Col>
-        </Row>
-      </Form>
-      <Nav className="me-auto">
-            <Nav.Link href="#music">Music</Nav.Link>
-            <Nav.Link href="#reviews">Reviews</Nav.Link>
-            <Nav.Link href="#discover">Discover</Nav.Link>
-          </Nav>
-          <Navbar.Toggle />
-          <Navbar.Collapse className="justify-content-end">
-            <Navbar.Text>
-            <a href="http://localhost:3000/register">
-                <Button variant="light" style={{width : '90px'}}>Register</Button>
-                </a>
-            </Navbar.Text>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
 
       <div className={'mainContainer'}>
       <div className={'titleContainer'}>

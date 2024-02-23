@@ -196,7 +196,7 @@ def handle_get_post_reviews():
         return jsonify(reviews), 200
     if request.method == 'POST':
         user_id = session.get("user_id")
-        print(request.json)
+
         if not user_id:
             return jsonify({"error": "Unauthorized"}), 401
         
@@ -217,8 +217,9 @@ def handle_put_delete_reviews(id):
         review = Review.query.get(id)
 
         if review:
-            review.body = request.json['reviewText']
-            review.rating = request.json['rating']
+            review.title = request.json['editModalTitle']
+            review.body = request.json['editModalText']
+            review.rating = request.json['editModalRating']
 
             try:
                 db.session.commit()
