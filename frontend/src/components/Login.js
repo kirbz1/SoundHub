@@ -1,18 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import httpClient from "../httpClient";
 
 const Login = () => {
 
   //redirect user to home if they try to access '/login' while logged in
   //change to make this run only once when user isn't actually logged in...
-  (async () => {
-    try {
-      await httpClient.get("/user");
-      window.location.href = "/";
-    } catch (error) {
-      //pass
-    }
-  })();
+  useEffect(() => {
+    (async () => {
+      try {
+        await httpClient.get("/user");
+        window.location.href = "/";
+      } catch (error) {
+        //pass
+      }
+    })();
+  }, []);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

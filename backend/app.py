@@ -7,6 +7,9 @@ from dotenv import load_dotenv
 import os
 from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import ARRAY
+from sqlalchemy.ext.mutable import MutableList
+
 
 
 
@@ -48,9 +51,8 @@ class User(db.Model):
     email = db.Column(db.String, unique=True, nullable=False)
     password = db.Column(db.String(30), nullable=False)
     #convert below into db.Integer[] equivalent (integer array)
-    liked_songs_ids = db.Column(db.ARRAY(db.Integer))
-    album_reviews_ids = db.Column(db.ARRAY(db.Integer))
-    song_reviews_ids = db.Column(db.ARRAY(db.Integer))
+    liked_songs_ids = db.Column(MutableList.as_mutable(ARRAY(db.Integer)), default=[])
+    reviews_ids = db.Column(MutableList.as_mutable(ARRAY(db.Integer)), default=[])
 
 class Artist(db.Model):
     __tablename__ = "artists"
@@ -214,9 +216,13 @@ def handle_get_post_reviews():
         title = request.json['reviewTitle']
         body = request.json['reviewText']
         
-
         new_review = Review(user_id=user_id, user_username=username, rating=rating, title=title, body=body, date=datetime.now(), num_likes=0)
+
         db.session.add(new_review)
+        db.session.commit()
+        
+        user = User.query.filter_by(id=user_id).first()
+        user.reviews_ids.append(new_review.id)
         db.session.commit()
         return "200"
 
@@ -244,6 +250,11 @@ def handle_put_delete_reviews(id):
 
         if review:
             try:
+                user_id = session.get("user_id")
+                user = User.query.filter_by(id=user_id).first()
+                if review.id in user.reviews_ids:
+                    user.reviews_ids.remove(review.id)
+
                 db.session.delete(review)
                 db.session.commit()
                 return jsonify({'message': 'Review deleted successfully'})

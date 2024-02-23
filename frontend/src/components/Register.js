@@ -1,17 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import httpClient from '../httpClient';
 
 const Register = () => {
 
   //redirect user to home if they try to access '/register' while logged in
-  (async () => {
-    try {
-      await httpClient.get("/user");
-      window.location.href = "/";
-    } catch (error) {
-      //pass
-    }
-  })();
+  useEffect(() => {
+    (async () => {
+      try {
+        await httpClient.get("/user");
+        window.location.href = "/";
+      } catch (error) {
+        //pass
+      }
+    })();
+  }, []);
+  
   
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
