@@ -46,7 +46,6 @@ const App = () => {
     (async () => {
       try {
         const response = await httpClient.get("/user");
-        console.log(response.data);
         setUser(response.data);
       } catch (error) {
         console.log("Not authenticated");
@@ -54,26 +53,68 @@ const App = () => {
     })();
   }, []);
 
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const handleChange = async (event) => {
+    const newQuery = event.target.value;
+    setQuery(newQuery);
+    if (newQuery.trim() === '') {
+      setResults([]);
+      setShowDropdown(false);
+      return;
+    }
+    try {
+      const response = await httpClient.get(`/search?query=${newQuery}`);
+      setResults(response.data);
+      setShowDropdown(true);
+    } catch (error) {
+      console.error('Error fetching search results:', error);
+    }
+  };
+
+  const handleBlur = () => {
+    // Hide dropdown when focus is lost from input
+    setTimeout(() => {
+      setShowDropdown(false);
+    }, 200);
+  };
+
+
   return (
     <div>
       <Navbar bg="dark" variant="dark" style={{height: '80px'}}>
         <Container>
-            <a href="http://localhost:3000/" style={{ textDecoration: 'none' }}>
+          <a href="http://localhost:3000/" style={{ textDecoration: 'none' }}>
             <Navbar.Brand style={{fontSize: '32px'}}>SoundHub</Navbar.Brand>
-            </a>
-            <Form inline>
-        <Row>
-          <Col xs="auto">
-            <Form.Control
-              type="text"
-              placeholder="Search"
-              //  (Users / Music) -- make wider / maybe dropdown results that refresh each time user enters text
-              className=" mr-sm-2"
-            />
-          </Col>
-        </Row>
-      </Form>
-      <Nav className="me-auto">
+          </a>
+          
+          <Form inline style={{ position: 'relative', height: '40px' }}>
+            <Row>
+              <Col xs="auto">
+                <Form.Control
+                  type="text"
+                  value={query}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder="Search for users..."
+                  className="mr-sm-2"
+                  // need to add ability to search music too...
+                />
+                {showDropdown && (
+                  <div className="dropdown">
+                    <ul>
+                      {results.map((user) => (
+                        <li key={user.id}>{user.username}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </Col>
+            </Row>
+          </Form>
+          <Nav className="me-auto">
             <Nav.Link href="/music">Music</Nav.Link>
             <Nav.Link href="/reviews">Reviews</Nav.Link>
             <Nav.Link href="/discover">Discover</Nav.Link>
@@ -81,7 +122,7 @@ const App = () => {
           <Navbar.Toggle />
           <Navbar.Collapse className="justify-content-end">
             <Navbar.Text>
-            { user === null ? (
+              { user === null ? (
                 <>
                 <a href="http://localhost:3000/login">
                 <Button variant="light" style={{marginRight : '15px', width : '90px'}}>Login</Button>
@@ -91,18 +132,17 @@ const App = () => {
                 </a>
                 </>
               ) : (
-              <>
-              <h5 style={{display: 'inline-block', fontSize: '16px', marginRight: '20px'}}>Signed in: <span style={{color:'white', cursor:'pointer', textDecoration: 'underline'}} onClick={handleShow}>{user.email}</span></h5>
-              <Button variant="light" onClick={() => submitLogout()}>Logout</Button> 
-              </>
+                <>
+                <h5 style={{display: 'inline-block', fontSize: '16px', marginRight: '20px'}}>Signed in: <span style={{color:'white', cursor:'pointer', textDecoration: 'underline'}} onClick={handleShow}>{user.email}</span></h5>
+                <Button variant="light" onClick={() => submitLogout()}>Logout</Button> 
+                </>
               )}
             </Navbar.Text>
           </Navbar.Collapse>
         </Container>
       </Navbar>
-        
+  
       <Offcanvas show={show} onHide={handleClose} placement='end'>
-        
         <Stack gap={4}>
           <hr/>
           <a href="http://localhost:3000/profile/reviews" style={{textDecoration: 'none', marginLeft:'30px', color: 'black'}}><Offcanvas.Title>Your Reviews</Offcanvas.Title></a>

@@ -161,6 +161,15 @@ def get_current_user():
         "email": user.email
     }) 
 
+@app.route('/search')
+def search_users():
+    query = request.args.get('query', '')
+    # Query the database for users whose usernames match the query (case-insensitive)
+    results = User.query.filter(User.username.ilike(f"%{query}%")).all()
+    # Serialize the results to JSON
+    results = [{'id': user.id, 'username': user.username} for user in results]
+    return jsonify(results)
+
 @app.route("/user/reviews")
 def get_current_user_reviews():
     user_id = session.get("user_id")

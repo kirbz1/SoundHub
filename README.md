@@ -8,6 +8,10 @@ Built with Flask, React &amp; PostgreSQL.
 - Move routing / models to separate files in backend
 
 - connect with others (search users + follow)
+    - Make users clickable and it takes you to the user's profile
+        - displays their reviews, liked songs, following, followers + buttons to follow them
+    - Able to search music
+        - Differentiate between users/music in search
 - spotify login + sync liked songs
 - spotify web playback sdk to stream
 - music recommendation system
