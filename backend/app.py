@@ -50,9 +50,10 @@ class User(db.Model):
     username = db.Column(db.String, unique=True, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
     password = db.Column(db.String(30), nullable=False)
-    #convert below into db.Integer[] equivalent (integer array)
     liked_songs_ids = db.Column(MutableList.as_mutable(ARRAY(db.Integer)), default=[])
     reviews_ids = db.Column(MutableList.as_mutable(ARRAY(db.Integer)), default=[])
+    following_ids = db.Column(MutableList.as_mutable(ARRAY(db.Integer)), default=[])
+    follower_ids = db.Column(MutableList.as_mutable(ARRAY(db.Integer)), default=[])
 
 class Artist(db.Model):
     __tablename__ = "artists"
@@ -161,7 +162,16 @@ def get_current_user():
         "id": user.id,
         "username": user.username,
         "email": user.email
-    }) 
+    })
+
+@app.route("/user/<username>")
+def get_user_from_username(username):
+    user = User.query.filter_by(username=username).first()
+    if user:
+        user = {'id': user.id, 'username': user.username, 'email': user.email}
+        return jsonify(user)
+    else:
+        return 404
 
 @app.route('/search')
 def search_users():
@@ -263,6 +273,31 @@ def handle_put_delete_reviews(id):
                 return jsonify({'message': 'Failed to delete review', 'error': str(e)}), 500
         else:
             return jsonify({'message': 'Review not found'}), 404
+
+@app.route('/follow', methods=['GET', 'POST'])
+def handle_follow_user():
+    if request.method == "POST":
+        curr_user_id = session.get("user_id")
+
+        if not curr_user_id:
+            return jsonify({"error": "Unauthorized"}), 401
+        
+        curr_user = User.query.filter_by(id=curr_user_id).first()
+        followed_user_id = request.json['id']
+        followed_user = User.query.filter_by(id=followed_user_id).first()
+        curr_user.following_ids.append(followed_user_id)
+        followed_user.follower_ids.append(curr_user_id)
+        db.session.commit()
+        return "200"
+    if request.method == "GET":
+        curr_user_id = session.get("user_id")
+        queried_user_id = request.args.get('id')
+        queried_user = User.query.filter_by(id=queried_user_id).first()
+        is_following = curr_user_id in queried_user.follower_ids
+        return jsonify({'isFollowing': is_following}), 200
+        
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

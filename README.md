@@ -4,24 +4,25 @@ A social platform where users can discuss and discover music.
 Built with Flask, React &amp; PostgreSQL.
 
 ## To-do
-### Top
+### High priority
+- Spotify login + sync liked songs
+
+- Spotify web playback sdk to stream
+
+- Music recommendation system 
+
 - Move routing / models to separate files in backend
 
-- connect with others (search users + follow)
-    - Make users clickable and it takes you to the user's profile
-        - displays their reviews, liked songs, following, followers + buttons to follow them
-    - Able to search music
-        - Differentiate between users/music in search
-- spotify login + sync liked songs
-- spotify web playback sdk to stream
-- music recommendation system
-
-### Mid
-
-
+### Low priority
+- user profile displays the user's reviews, liked songs, following, followers
+    - handle edge cases like user viewing own profile / trying to follow self
+    - allow unfollow 
+- Differentiate between components/pages
+- Able to search music / differentiate between music/users in search
 - "Your reviews" for user
     - Filter reviews by song/album title
     - When creating reviews, allow user to search database of albums/songs in 'album/song name' input section with dropdown of results
+    - Popup that confirms delete review
 - "Your liked songs" for user
 - "Following" for user
 - "Followers" for user

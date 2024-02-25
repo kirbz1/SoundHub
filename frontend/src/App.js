@@ -21,7 +21,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Nav from 'react-bootstrap/Nav';
 import { useState, useEffect } from 'react';
-
+import UserProfile from'./components/UserProfile';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import Stack from 'react-bootstrap/Stack';
 import httpClient from "./httpClient";
@@ -81,6 +81,10 @@ const App = () => {
     }, 200);
   };
 
+  const redirectToUserPage = (username) => {
+    window.location.href = "/user/" + username;
+  }
+  
 
   return (
     <div>
@@ -106,7 +110,7 @@ const App = () => {
                   <div className="dropdown">
                     <ul>
                       {results.map((user) => (
-                        <li key={user.id}>{user.username}</li>
+                        <li key={user.id} onClick={() => redirectToUserPage(user.username)}>{user.username}</li>
                       ))}
                     </ul>
                   </div>
@@ -177,6 +181,7 @@ const App = () => {
           <Route exact path="/music" element={<Music/>} />
           <Route exact path="/reviews" element={<Reviews/>} />
           <Route exact path="/discover" element={<Discover/>} />
+          <Route exact path="/user/:username" element={<UserProfile/>} />
           <Route path="*" element={<NotFound/>} />
         </Routes>
       </div>
