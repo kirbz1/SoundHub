@@ -5,19 +5,21 @@ Built with Flask, React &amp; PostgreSQL.
 
 ## To-do
 ### High priority
-- Spotify login + sync liked songs
-
-- Spotify web playback sdk to stream
+- Spotify login
+    - Option to sync liked songs
+    - Display top tracks and recommend to add a review for them
+    - Spotify web playback sdk to stream music
 
 - Music recommendation system 
 
-- Move routing / models to separate files in backend
+- Clean up codebase
+    - Move routing / models to separate files in backend
+    - Differentiate between components/pages
 
 ### Low priority
-- user profile displays the user's reviews, liked songs, following, followers
+- User profile displays the user's reviews, liked songs, following, followers
     - handle edge cases like user viewing own profile / trying to follow self
     - allow unfollow 
-- Differentiate between components/pages
 - Able to search music / differentiate between music/users in search
 - "Your reviews" for user
     - Filter reviews by song/album title

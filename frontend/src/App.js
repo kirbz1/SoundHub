@@ -28,10 +28,12 @@ import httpClient from "./httpClient";
 
 const App = () => {
 
+  const [loaded, setLoaded] = useState(false);
+
   const [user, setUser] = useState(null);
   
   const [show, setShow] = useState(false);
-
+  
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
   
@@ -50,6 +52,7 @@ const App = () => {
       } catch (error) {
         console.log("Not authenticated");
       }
+      setLoaded(true);
     })();
   }, []);
 
@@ -125,6 +128,7 @@ const App = () => {
           </Nav>
           <Navbar.Toggle />
           <Navbar.Collapse className="justify-content-end">
+            {loaded ? (
             <Navbar.Text>
               { user === null ? (
                 <>
@@ -142,6 +146,9 @@ const App = () => {
                 </>
               )}
             </Navbar.Text>
+            ) : (
+              <div className='spinner-border text-light' role='status'/>
+            )}
           </Navbar.Collapse>
         </Container>
       </Navbar>
