@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, session
+from flask import Flask, jsonify, request, session, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
@@ -9,7 +9,8 @@ from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import ARRAY
 from sqlalchemy.ext.mutable import MutableList
-
+from spotipy import Spotify
+from spotipy.oauth2 import SpotifyOAuth
 
 
 
@@ -18,6 +19,12 @@ load_dotenv()
 DATABASE = os.getenv('DATABASE')
 DATABASE_USERNAME = os.getenv('DATABASE_USERNAME')
 DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
+
+SPOTIPY_CLIENT_ID = os.getenv('SPOTIPY_CLIENT_ID')
+SPOTIPY_CLIENT_SECRET = os.getenv('SPOTIPY_CLIENT_SECRET')
+SPOTIPY_REDIRECT_URI = os.getenv('SPOTIPY_REDIRECT_URI')
+
+sp_oauth = SpotifyOAuth(SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET, SPOTIPY_REDIRECT_URI, scope='user-library-read')
 
 class ApplicationConfig:
     SECRET_KEY = 'bwiohgoiwhbgoiwhjoigbwoi'
@@ -296,6 +303,29 @@ def handle_follow_user():
         is_following = curr_user_id in queried_user.follower_ids
         return jsonify({'isFollowing': is_following}), 200
         
+@app.route('/spotify/login')
+def spotify_login():
+    auth_url = sp_oauth.get_authorize_url()
+    return auth_url
+
+@app.route('/spotify/callback')
+def spotify_callback():
+    token_info = sp_oauth.get_access_token(request.args['code'])
+    session['token_info'] = token_info
+    return '200'
+
+@app.route('/spotify/get_saved_tracks')
+def spotify_get_saved_tracks():
+    if 'token_info' not in session:
+        return redirect('/')
+
+    token_info = session['token_info']
+    sp = Spotify(auth=token_info['access_token'])
+
+    # Get the user's saved tracks
+    saved_tracks = sp.current_user_saved_tracks()
+
+    return jsonify(saved_tracks)
 
 
 
