@@ -8,7 +8,6 @@ Built with Flask, React &amp; PostgreSQL.
 - Spotify login
     - Option to sync liked songs
     - Display top tracks and recommend to add a review for them
-    - Spotify web playback sdk to stream music
 
 - Music recommendation system 
 

@@ -24,7 +24,7 @@ SPOTIPY_CLIENT_ID = os.getenv('SPOTIPY_CLIENT_ID')
 SPOTIPY_CLIENT_SECRET = os.getenv('SPOTIPY_CLIENT_SECRET')
 SPOTIPY_REDIRECT_URI = os.getenv('SPOTIPY_REDIRECT_URI')
 
-sp_oauth = SpotifyOAuth(SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET, SPOTIPY_REDIRECT_URI, scope='user-library-read')
+sp_oauth = SpotifyOAuth(SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET, SPOTIPY_REDIRECT_URI, scope='streaming')
 
 class ApplicationConfig:
     SECRET_KEY = 'bwiohgoiwhbgoiwhjoigbwoi'
@@ -80,6 +80,18 @@ class Album(db.Model):
     rating = db.Column(db.Float)
     num_ratings = db.Column(db.Integer)
 
+class Song(db.Model):
+    __tablename__ = "songs"
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100))
+    year = db.Column(db.String(4))
+    album_id = db.Column(db.Integer)
+    album = db.Column(db.String(100))
+    artist_id = db.Column(db.Integer)
+    artist = db.Column(db.String(100))
+    rating = db.Column(db.Float)
+    num_ratings = db.Column(db.Integer)
+
 class Review(db.Model):
     __tablename__ = "reviews"
     id = db.Column(db.Integer, primary_key=True)
@@ -93,24 +105,13 @@ class Review(db.Model):
     date = db.Column(db.DateTime)
     num_likes = db.Column(db.Integer)
 
-class Song(db.Model):
-    __tablename__ = "songs"
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100))
-    year = db.Column(db.String(4))
-    album_id = db.Column(db.Integer)
-    album = db.Column(db.String(100))
-    artist_id = db.Column(db.Integer)
-    artist = db.Column(db.String(100))
-    rating = db.Column(db.Float)
-    num_ratings = db.Column(db.Integer)
+
 
 
 
 # routing
 
 
-#should probably handle case that a user is already logged in and submits a register request - shouldn't be allowed
 @app.route("/register", methods=["POST"])
 def register_user():
     #gets user, email and password input
@@ -163,6 +164,7 @@ def get_current_user():
 
     if not user_id:
         return jsonify({"error": "Unauthorized"}), 401
+    
     
     user = User.query.filter_by(id=user_id).first()
     return jsonify({
@@ -326,7 +328,6 @@ def spotify_get_saved_tracks():
     saved_tracks = sp.current_user_saved_tracks()
 
     return jsonify(saved_tracks)
-
 
 
 if __name__ == '__main__':

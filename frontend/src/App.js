@@ -23,7 +23,7 @@ import NavbarWithOffcanvas from './components/NavbarWithOffcanvas';
 
 const App = () => {
 
-  const [spotifyLoggedIn, setSpotifyLoggedIn] = useState(false)
+  const [spotifyLoggedIn, setSpotifyLoggedIn] = useState(false);
   
   return (
     <div>
