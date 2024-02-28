@@ -2,7 +2,7 @@ import React, { useEffect} from 'react';
 import httpClient from '../httpClient';
 import { useLocation } from 'react-router-dom';
 
-const Callback = ({ onLogin }) => {
+const Callback = () => {
 
   const location = useLocation(); // Get the current location
 
@@ -13,9 +13,8 @@ const Callback = ({ onLogin }) => {
     if (code) {
       // If a code is present in the URL parameters, include it in the GET request to the backend
       handleCallback(code);
-      onLogin();
     }
-  }, [location.search, onLogin]); // Only run this effect once when the component mounts
+  }, [location.search]); // Only run this effect once when the component mounts
 
   const handleCallback = async (code) => {
     try {

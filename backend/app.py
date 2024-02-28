@@ -24,7 +24,7 @@ SPOTIPY_CLIENT_ID = os.getenv('SPOTIPY_CLIENT_ID')
 SPOTIPY_CLIENT_SECRET = os.getenv('SPOTIPY_CLIENT_SECRET')
 SPOTIPY_REDIRECT_URI = os.getenv('SPOTIPY_REDIRECT_URI')
 
-sp_oauth = SpotifyOAuth(SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET, SPOTIPY_REDIRECT_URI, scope='streaming')
+sp_oauth = SpotifyOAuth(SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET, SPOTIPY_REDIRECT_URI, scope='user-library-read')
 
 class ApplicationConfig:
     SECRET_KEY = 'bwiohgoiwhbgoiwhjoigbwoi'
@@ -78,7 +78,7 @@ class Album(db.Model):
     artist = db.Column(db.String(100))
     song_ids = db.Column(db.ARRAY(db.Integer))
     rating = db.Column(db.Float)
-    num_ratings = db.Column(db.Integer)
+    num_ratings = db.Column(db.Integer, default=0)
 
 class Song(db.Model):
     __tablename__ = "songs"
@@ -90,7 +90,7 @@ class Song(db.Model):
     artist_id = db.Column(db.Integer)
     artist = db.Column(db.String(100))
     rating = db.Column(db.Float)
-    num_ratings = db.Column(db.Integer)
+    num_ratings = db.Column(db.Integer, default=0)
 
 class Review(db.Model):
     __tablename__ = "reviews"
@@ -156,6 +156,7 @@ def login_user():
 @app.route("/logout", methods=["POST"])
 def logout_user():
     session.pop("user_id")
+    session.pop("token_info")
     return "200"
 
 @app.route("/user")
@@ -201,6 +202,23 @@ def get_current_user_reviews():
     user_reviews = Review.query.filter_by(user_id=user_id)
     user_reviews = [{'id': review.id, 'user': review.user_username, 'date': review.date, 'title': review.title, 'body': review.body, 'rating': review.rating, 'num_likes': review.num_likes} for review in user_reviews]
     return jsonify(user_reviews)
+
+@app.route("/user/liked_songs")
+def get_current_user_liked_songs():
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    user = User.query.filter_by(id=user_id).first()
+    songs = []
+    for song_id in user.liked_songs_ids:
+        song = Song.query.filter_by(id=song_id).first()
+        if song != None:
+            song = {'id': song.id, 'title': song.title}
+            songs.append(song)
+    return jsonify(songs)
+
 
 
 @app.route('/songs')
@@ -316,7 +334,14 @@ def spotify_callback():
     session['token_info'] = token_info
     return '200'
 
-@app.route('/spotify/get_saved_tracks')
+@app.route('/spotify/login_status')
+def spotify_get_login_status():
+    if 'token_info' not in session:
+        return jsonify({'status': False})
+    else:
+        return jsonify({'status': True})
+
+@app.route('/spotify/sync_liked_songs')
 def spotify_get_saved_tracks():
     if 'token_info' not in session:
         return redirect('/')
@@ -325,9 +350,50 @@ def spotify_get_saved_tracks():
     sp = Spotify(auth=token_info['access_token'])
 
     # Get the user's saved tracks
-    saved_tracks = sp.current_user_saved_tracks()
+    total = sp.current_user_saved_tracks()['total']
+    offset = 0
+    max_limit = 50
+    results = []
+    while len(results) < total:
+        curr_tracks = sp.current_user_saved_tracks(limit=max_limit, offset=offset)['items']
 
-    return jsonify(saved_tracks)
+        results.extend([track['track']['name'] for track in curr_tracks])
+        offset += 50
+        if len(results) > 10:
+            break
+    
+    #init user object for use during loop
+    user_id = session.get("user_id")
+    user = User.query.filter_by(id=user_id).first()
+
+    #add each result track to user.liked_songs
+    while len(results) > 0:
+        curr_track_title = results.pop()
+
+        track = Song.query.filter_by(title=curr_track_title).first()
+        #album = 
+        #artist = 
+
+        #initialise missing objects
+        #if artist == None:
+
+        #if album == None:
+
+        if track == None: 
+            track = Song(title=curr_track_title)
+            db.session.add(track)
+            db.session.commit()
+
+
+        if track.id in user.liked_songs_ids:
+            pass
+        else:
+            user.liked_songs_ids.append(track.id)
+            db.session.commit()
+
+    
+
+    return '200'
 
 
 if __name__ == '__main__':

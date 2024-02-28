@@ -145,11 +145,13 @@ const NavbarWithOffcanvas = (spotifyLoggedIn) => {
           <hr/>
           <a href="http://localhost:3000/profile/liked-songs" style={{textDecoration: 'none', marginLeft:'30px', color: 'black'}}><Offcanvas.Title>Your Saved Songs</Offcanvas.Title></a>
           <hr/>
-          { !spotifyLoggedIn && (
+          { spotifyLoggedIn.spotifyLoggedIn === false ? (
           <>
           <a href="http://localhost:3000/profile/connect-spotify" style={{textDecoration: 'none', marginLeft:'30px', color: 'black'}}><Offcanvas.Title>Connect to Spotify</Offcanvas.Title></a>
           <hr/>
           </>
+          ) : (
+            null
           )}
           
           {/* <a href="http://localhost:3000/profile/statistics" style={{textDecoration: 'none', marginLeft:'30px', color: 'black'}}><Offcanvas.Title>Statistics</Offcanvas.Title></a>
