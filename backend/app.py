@@ -469,7 +469,6 @@ def discover_songs():
     
     recommended_songs_ids = recommend_songs(user_id)
     recommended_songs = [{'id': song_id, 'title': Song.query.filter_by(id=song_id).first().title, 'artist': Artist.query.filter_by(id=Song.query.filter_by(id=song_id).first().artist_id).first().name} for song_id in recommended_songs_ids]
-    print(recommended_songs)
     return jsonify(recommended_songs)
 
 if __name__ == '__main__':
