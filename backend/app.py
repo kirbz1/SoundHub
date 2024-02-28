@@ -11,7 +11,8 @@ from sqlalchemy import ARRAY
 from sqlalchemy.ext.mutable import MutableList
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyOAuth
-
+import pandas as pd
+import numpy as np
 
 
 # PostgreSQL Database credentials loaded from the .env file
@@ -66,30 +67,25 @@ class Artist(db.Model):
     __tablename__ = "artists"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
-    album_ids = db.Column(db.ARRAY(db.Integer))
-    song_ids = db.Column(db.ARRAY(db.Integer))
+    album_ids = db.Column(MutableList.as_mutable(ARRAY(db.Integer)), default=[])
+    song_ids = db.Column(MutableList.as_mutable(ARRAY(db.Integer)), default=[])
 
 class Album(db.Model):
     __tablename__ = "albums"
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100))
-    year = db.Column(db.String(4))
     artist_id = db.Column(db.Integer)
-    artist = db.Column(db.String(100))
-    song_ids = db.Column(db.ARRAY(db.Integer))
-    rating = db.Column(db.Float)
+    song_ids = db.Column(MutableList.as_mutable(ARRAY(db.Integer)), default=[])
+    rating = db.Column(db.Float, default=0)
     num_ratings = db.Column(db.Integer, default=0)
 
 class Song(db.Model):
     __tablename__ = "songs"
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100))
-    year = db.Column(db.String(4))
     album_id = db.Column(db.Integer)
-    album = db.Column(db.String(100))
     artist_id = db.Column(db.Integer)
-    artist = db.Column(db.String(100))
-    rating = db.Column(db.Float)
+    rating = db.Column(db.Float, default=0)
     num_ratings = db.Column(db.Integer, default=0)
 
 class Review(db.Model):
@@ -103,7 +99,7 @@ class Review(db.Model):
     title = db.Column(db.String(100))
     body = db.Column(db.String(1000))
     date = db.Column(db.DateTime)
-    num_likes = db.Column(db.Integer)
+    num_likes = db.Column(db.Integer, default=0)
 
 
 
@@ -224,14 +220,14 @@ def get_current_user_liked_songs():
 @app.route('/songs')
 def fetch_all_songs():
     songs = Song.query.all()
-    songs = [{'id': song.id, 'title': song.title, 'artist': song.artist, 'rating': song.rating} for song in songs]
+    songs = [{'id': song.id, 'title': song.title, 'artist': Artist.query.filter_by(id=song.artist_id).first().name, 'rating': song.rating} for song in songs]
     songs = sorted(songs, key=lambda x: x['rating'], reverse=True)
     return jsonify(songs), 200
 
 @app.route('/albums')
 def fetch_all_albums():
     albums = Album.query.all()
-    albums = [{'id': album.id, 'title': album.title, 'artist': album.artist, 'rating': album.rating} for album in albums]
+    albums = [{'id': album.id, 'title': album.title, 'artist': Artist.query.filter_by(id=album.artist_id).first().name, 'rating': album.rating} for album in albums]
     albums = sorted(albums, key=lambda x: x['rating'], reverse=True)
     return jsonify(albums), 200
 
@@ -356,11 +352,8 @@ def spotify_get_saved_tracks():
     results = []
     while len(results) < total:
         curr_tracks = sp.current_user_saved_tracks(limit=max_limit, offset=offset)['items']
-
-        results.extend([track['track']['name'] for track in curr_tracks])
+        results.extend([(track['track']['name'], track['track']['artists'][0]['name'], track['track']['album']['name']) for track in curr_tracks])
         offset += 50
-        if len(results) > 10:
-            break
     
     #init user object for use during loop
     user_id = session.get("user_id")
@@ -368,22 +361,45 @@ def spotify_get_saved_tracks():
 
     #add each result track to user.liked_songs
     while len(results) > 0:
-        curr_track_title = results.pop()
+        curr_track = results.pop()
 
-        track = Song.query.filter_by(title=curr_track_title).first()
-        #album = 
-        #artist = 
+        track = Song.query.filter_by(title=curr_track[0]).first()
+        album = Album.query.filter_by(title=curr_track[2]).first()
+        artist = Artist.query.filter_by(name=curr_track[1]).first()
+
+
 
         #initialise missing objects
-        #if artist == None:
-
-        #if album == None:
-
-        if track == None: 
-            track = Song(title=curr_track_title)
-            db.session.add(track)
+        if artist == None:
+            artist = Artist(name=curr_track[1])
+            db.session.add(artist)
             db.session.commit()
 
+            
+        if album == None:
+            album = Album(title=curr_track[2], artist_id=artist.id)
+            db.session.add(album)
+            db.session.commit()
+
+        if track == None: 
+            track = Song(title=curr_track[0], album_id=album.id, artist_id=artist.id)
+            db.session.add(track)
+            db.session.commit()
+        
+        if track.id not in album.song_ids:
+                album.song_ids.append(track.id)
+                db.session.commit()
+
+        if track.id not in artist.song_ids:
+            artist.song_ids.append(track.id)
+            db.session.commit()
+            
+        if album.id not in artist.album_ids:
+            artist.album_ids.append(album.id)
+            db.session.commit()
+        
+
+        
 
         if track.id in user.liked_songs_ids:
             pass
@@ -395,6 +411,66 @@ def spotify_get_saved_tracks():
 
     return '200'
 
+
+
+    
+
+
+
+
+
+@app.route('/discover')
+def discover_songs():
+    
+    data = { 'user_id': [], 'song_id': [] }
+
+    for user in User.query.all():
+        data['user_id'].extend([user.id] * len(user.liked_songs_ids))
+        data['song_id'].extend(user.liked_songs_ids)
+
+    
+    df = pd.DataFrame(data)
+    
+    user_item_matrix = df.pivot_table(index='user_id', columns='song_id', aggfunc=lambda x: 1, fill_value=0)
+
+    def cosine_similarity(vector1, vector2):
+        dot_product = np.dot(vector1, vector2)
+        norm_vector1 = np.linalg.norm(vector1)
+        norm_vector2 = np.linalg.norm(vector2)
+        return dot_product / (norm_vector1 * norm_vector2)
+    
+    user_similarity_matrix = np.zeros((len(user_item_matrix), len(user_item_matrix)))
+    
+    for i in range(len(user_item_matrix)):
+        for j in range(len(user_item_matrix)):
+            user_similarity_matrix[i, j] = cosine_similarity(user_item_matrix.iloc[i], user_item_matrix.iloc[j])
+
+    def find_similar_users(user_id, k=5):
+        similar_users = sorted(list(enumerate(user_similarity_matrix[user_id])), key=lambda x: x[1], reverse=True)
+        similar_users = [x[0] for x in similar_users if x[0] != user_id]
+        return similar_users[:k]
+
+    def recommend_songs(user_id, k=5):
+        similar_users = find_similar_users(user_id)
+        recommended_songs = set()
+        for sim_user in similar_users:
+            liked_songs = df[df['user_id'] == sim_user]['song_id']
+            for song in liked_songs:
+                if song not in df[df['user_id'] == user_id]['song_id']:
+                    recommended_songs.add(song)
+                    if len(recommended_songs) == k:
+                        return list(recommended_songs)
+        return list(recommended_songs)
+    
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    recommended_songs_ids = recommend_songs(user_id)
+    recommended_songs = [{'id': song_id, 'title': Song.query.filter_by(id=song_id).first().title, 'artist': Artist.query.filter_by(id=Song.query.filter_by(id=song_id).first().artist_id).first().name} for song_id in recommended_songs_ids]
+    print(recommended_songs)
+    return jsonify(recommended_songs)
 
 if __name__ == '__main__':
     app.run(debug=True)

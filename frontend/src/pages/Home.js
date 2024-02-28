@@ -7,7 +7,7 @@ const Home = (spotifyLoggedIn) => {
   const syncLikedSongs = async () => {
     try {
       // Send GET request to server endpoint to check user login status
-      await httpClient.get('/spotify/sync_liked_songs');
+      await httpClient.get('/spotify/sync_liked_songs').then(response => console.log(response.data));
       
     } catch (error) {
       console.error('Error syncing liked songs:', error);

@@ -1,11 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import httpClient from '../httpClient';
 
 const Discover = () => {
 
+  const [recommendedSongs, setRecommendedSongs] = useState([]);
+
+  useEffect(() => {
+    const fetchRecommendedSongs = async () => {
+      try {
+        const response = await httpClient.get('/discover');
+        setRecommendedSongs(response.data);
+      } catch (error) {
+        console.error('Error fetching recommended songs:', error);
+      }
+    };
+
+    fetchRecommendedSongs();
+  }, []);
+
   return(    
       <div className='mainContainer'>
-        <h3 className='titleContainer'>Songs You Might Like</h3>
-          <p>create backend endpoint that recommends half a dozen songs to user based on their liked songs / rating history</p>
+        <h3 className='titleContainer'>Songs You Might Like (Collaborative Filtering)</h3>
+          <ul>
+            {recommendedSongs.map(song => (
+              <li key={song.id}>{song.title} by {song.artist}</li>
+            ))}
+          </ul>
       </div>
   )
 }
