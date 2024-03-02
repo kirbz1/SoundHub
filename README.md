@@ -5,25 +5,22 @@ Built with Flask, React &amp; PostgreSQL.
 
 ## To-do (roughly ordered highest to lowest priority)
 
-
-
-- Display cards for music (use https://www.imdb.com/chart/top/?ref_=nv_mv_250 for inspo)
-    - Allow reviewing / viewing more info by clicking an item
-    - Display overall ranking
-    - Allow filtering options
-
 - Trending music (most popular songs/albums in past week e.g. search reviews by past week and find which songs/albums are being positively reviewed the most)
     - Write backend endpoint
     - Display results on frontend
 
-- Clean up codebase
-    - Move routing / models to separate files in backend
-    - Differentiate between components/pages    
+- Display cards for music
+    - Allow reviewing / viewing more info by clicking a menu item
+    - Allow filtering options
+        - Maybe by default display only top 250 songs/albums
 
-- Trending reviews
-- Pagination for review results
 
-- Home page
+    
+- Reviews
+    - Clean SQL table
+    - Copy music display
+    - allow like/comments for reviews
+    - Trending reviews
 
 - User profile
     - User profile displays the user's reviews, liked songs, following, followers
@@ -33,14 +30,15 @@ Built with Flask, React &amp; PostgreSQL.
         - Filter reviews by song/album title
         - When creating reviews, allow user to search database of albums/songs in 'album/song name' input section with dropdown of results
         - Popup that confirms delete review
+    - "your saved songs"
+        - Display saved songs in a nicer format (pagination + able to click on individual songs to unlike / see more info)
+        - Move sync saved spotify songs button to saved songs page
     - Ability to manage account (delete account, change username)
     - personal "Statistics" for current user
 
+- Home page
+
 - Ability to search music
-
-- Move sync saved spotify songs button to saved songs page
-
-- Display saved songs in a nicer format (pagination + able to click on individual songs to unlike / see more info)
 
 - Spotify login
     - Display top tracks and recommend to add a review for them
