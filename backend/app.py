@@ -221,39 +221,35 @@ def get_current_user_liked_songs():
 @app.route('/songs')
 def fetch_all_songs():
     page = int(request.args.get('page', 1))
-    per_page = int(request.args.get('per_page', 20))
+    per_page = int(request.args.get('per_page', 10))
     songs = (db.session.query(Song, Artist.name)
              .join(Artist, Song.artist_id == Artist.id)
              .order_by(desc(Song.rating))
              .paginate(page=page, per_page=per_page))
     songs = [{'id': song[0].id, 'title': song[0].title, 'artist': song[1], 'rating': song[0].rating} for song in songs.items]
-    
-
     return jsonify(songs), 200
 
 @app.route('/songs/total_pages')
 def fetch_total_pages_songs():
     song_count = db.session.query(Song).count()
-    per_page = 20
+    per_page = 10
     return jsonify(math.ceil(song_count/per_page))
     
-
 @app.route('/albums')
 def fetch_all_albums():
     page = int(request.args.get('page', 1))
-    per_page = int(request.args.get('per_page', 20))
+    per_page = int(request.args.get('per_page', 10))
     albums = (db.session.query(Album, Artist.name)
              .join(Artist, Album.artist_id == Artist.id)
              .order_by(desc(Album.rating))
              .paginate(page=page, per_page=per_page))
     albums = [{'id': album[0].id, 'title': album[0].title, 'artist': album[1], 'rating': album[0].rating} for album in albums.items]
-
     return jsonify(albums), 200
 
 @app.route('/albums/total_pages')
 def fetch_total_pages_albums():
     album_count = db.session.query(Album).count()
-    per_page = 20
+    per_page = 10
     return jsonify(math.ceil(album_count/per_page))
 
 @app.route('/reviews', methods=['GET', 'POST'])

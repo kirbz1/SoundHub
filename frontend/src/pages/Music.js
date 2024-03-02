@@ -3,6 +3,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import httpClient from "../httpClient";
 import { Pagination } from 'react-bootstrap';
+import MusicCard from '../components/MusicCard';
 
 const Music = () => {
   const [songs, setSongs] = useState([]);
@@ -17,7 +18,7 @@ const Music = () => {
   useEffect(() => {
     (async () => {
       try {
-        const response = await httpClient.get("/albums?page=" + currentAlbumsPage + "&per_page=20");
+        const response = await httpClient.get("/albums?page=" + currentAlbumsPage + "&per_page=10");
         setAlbums(response.data);
       } catch (error) {
         console.log("Couldn't fetch '/albums'.");
@@ -25,7 +26,7 @@ const Music = () => {
     })();
     (async () => {
       try {
-        const response = await httpClient.get("/songs?page=" + currentSongsPage + "&per_page=20");
+        const response = await httpClient.get("/songs?page=" + currentSongsPage + "&per_page=10");
         setSongs(response.data);
       } catch (error) {
         console.log("Couldn't fetch '/songs'.");
@@ -78,7 +79,7 @@ const Music = () => {
                 <p>Loading albums...</p>
                 ): (
                   albums.map(album => (
-                    <li key={album.id}>{album.title} by {album.artist} ({album.rating}/5)</li>
+                    <MusicCard key={album.id} music={album}></MusicCard>
                   ))
                 )}
             </ul>
@@ -108,6 +109,7 @@ const Music = () => {
                 } else if (number === currentAlbumsPage - 3 || number === currentAlbumsPage + 1) {
                   return <Pagination.Ellipsis key={number + 1} />;
                 }
+                return null;
 
               })}
             </Pagination>
@@ -122,7 +124,7 @@ const Music = () => {
                 <p>Loading songs...</p>
                 ): (
                   songs.map(song => (
-                    <li key={song.id}>{song.title} by {song.artist} ({song.rating}/5)</li>
+                    <MusicCard key={song.id} music={song}></MusicCard>
                   ))
                 )}
             </ul>
@@ -152,12 +154,12 @@ const Music = () => {
                 } else if (number === currentSongsPage - 3 || number === currentSongsPage + 1) {
                   return <Pagination.Ellipsis key={number + 1} />;
                 }
-
+                return null;
               })}
             </Pagination>
           </div>
         </Col>
-        <Col sm={4}>
+        <Col sm={3}>
           {/* Content for the second column */}
           <div className='mainContainer'>
             <h3 className='titleContainer'>Trending</h3>
