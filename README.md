@@ -4,16 +4,21 @@ A social platform where users can discuss and discover music.
 Built with Flask, React &amp; PostgreSQL.
 
 ## To-do (roughly ordered highest to lowest priority)
-- Clean up codebase
-    - Move routing / models to separate files in backend
-    - Differentiate between components/pages
 
 
+
+- Display cards for music (use https://www.imdb.com/chart/top/?ref_=nv_mv_250 for inspo)
+    - Allow reviewing / viewing more info by clicking an item
+    - Display overall ranking
+    - Allow filtering options
 
 - Trending music (most popular songs/albums in past week e.g. search reviews by past week and find which songs/albums are being positively reviewed the most)
     - Write backend endpoint
     - Display results on frontend
-- Display cards for music (use https://www.imdb.com/chart/top/?ref_=nv_mv_250 for inspo), maybe reduce # results per page to 10-15?
+
+- Clean up codebase
+    - Move routing / models to separate files in backend
+    - Differentiate between components/pages    
 
 - Trending reviews
 - Pagination for review results

@@ -38,7 +38,6 @@ const Music = () => {
     (async() => {
       try {
         const response = await httpClient.get("/albums/total_pages");
-        console.log(response.data);
         setTotalAlbumsPages(response.data);
       } catch (error) {
         console.log(error);
@@ -48,7 +47,6 @@ const Music = () => {
     (async() => {
       try {
         const response = await httpClient.get("/songs/total_pages");
-        console.log(response.data);
         setTotalSongsPages(response.data);
       } catch (error) {
         console.log(error);
@@ -74,6 +72,7 @@ const Music = () => {
           {/* Content for the first column */}
           <div className='mainContainer'>
             <h3 className='titleContainer'>Top Albums</h3>
+            <br/>
             <ul>
               {(typeof albums === 'undefined') ? (
                 <p>Loading albums...</p>
@@ -119,6 +118,8 @@ const Music = () => {
           {/* Content for the second column */}
           <div className='mainContainer'>
             <h3 className='titleContainer'>Top Songs</h3>
+            <br/>
+
             <ul>
               {(typeof songs === 'undefined') ? (
                 <p>Loading songs...</p>
@@ -163,6 +164,8 @@ const Music = () => {
           {/* Content for the second column */}
           <div className='mainContainer'>
             <h3 className='titleContainer'>Trending</h3>
+            <br/>
+
               <p>Define an endpoint to get most popular songs / albums from the past week</p>
               {/* <Pagination>
                 {[...Array(totalPages).keys()].map(number => (

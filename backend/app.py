@@ -79,6 +79,7 @@ class Album(db.Model):
     song_ids = db.Column(MutableList.as_mutable(ARRAY(db.Integer)), default=[])
     rating = db.Column(db.Float, default=0)
     num_ratings = db.Column(db.Integer, default=0)
+    imgurl = db.Column(db.String(255))
 
 class Song(db.Model):
     __tablename__ = "songs"
@@ -88,6 +89,8 @@ class Song(db.Model):
     artist_id = db.Column(db.Integer)
     rating = db.Column(db.Float, default=0)
     num_ratings = db.Column(db.Integer, default=0)
+    imgurl = db.Column(db.String(255))
+
 
 class Review(db.Model):
     __tablename__ = "reviews"
@@ -226,7 +229,8 @@ def fetch_all_songs():
              .join(Artist, Song.artist_id == Artist.id)
              .order_by(desc(Song.rating))
              .paginate(page=page, per_page=per_page))
-    songs = [{'id': song[0].id, 'title': song[0].title, 'artist': song[1], 'rating': song[0].rating} for song in songs.items]
+    rank_start = (page - 1) * per_page + 1
+    songs = [{'id': song[0].id, 'title': song[0].title, 'artist': song[1], 'rating': song[0].rating, 'imgurl': song[0].imgurl, 'rank': rank_start + i - 1} for i, song in enumerate(songs.items, start=1)]
     return jsonify(songs), 200
 
 @app.route('/songs/total_pages')
@@ -243,7 +247,8 @@ def fetch_all_albums():
              .join(Artist, Album.artist_id == Artist.id)
              .order_by(desc(Album.rating))
              .paginate(page=page, per_page=per_page))
-    albums = [{'id': album[0].id, 'title': album[0].title, 'artist': album[1], 'rating': album[0].rating} for album in albums.items]
+    rank_start = (page - 1) * per_page + 1
+    albums = [{'id': album[0].id, 'title': album[0].title, 'artist': album[1], 'rating': album[0].rating, 'imgurl': album[0].imgurl, 'rank': rank_start + i - 1} for i, album in enumerate(albums.items, start=1)]
     return jsonify(albums), 200
 
 @app.route('/albums/total_pages')
@@ -360,20 +365,22 @@ def spotify_get_login_status():
 
 @app.route('/spotify/sync_liked_songs')
 def spotify_get_saved_tracks():
+
+
     if 'token_info' not in session:
         return redirect('/')
 
     token_info = session['token_info']
     sp = Spotify(auth=token_info['access_token'])
-
     # Get the user's saved tracks
     total = sp.current_user_saved_tracks()['total']
+
     offset = 0
     max_limit = 50
     results = []
     while len(results) < total:
         curr_tracks = sp.current_user_saved_tracks(limit=max_limit, offset=offset)['items']
-        results.extend([(track['track']['name'], track['track']['artists'][0]['name'], track['track']['album']['name']) for track in curr_tracks])
+        results.extend([(track['track']['name'], track['track']['artists'][0]['name'], track['track']['album']['name'], track['track']['album']['images'][-1]['url']) for track in curr_tracks])
         offset += 50
     
     #init user object for use during loop
@@ -398,12 +405,12 @@ def spotify_get_saved_tracks():
 
             
         if album == None:
-            album = Album(title=curr_track[2], artist_id=artist.id)
+            album = Album(title=curr_track[2], artist_id=artist.id, imgurl=curr_track[3])
             db.session.add(album)
             db.session.commit()
 
         if track == None: 
-            track = Song(title=curr_track[0], album_id=album.id, artist_id=artist.id)
+            track = Song(title=curr_track[0], album_id=album.id, artist_id=artist.id, imgurl=curr_track[3])
             db.session.add(track)
             db.session.commit()
         
