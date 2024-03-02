@@ -8,12 +8,18 @@ Built with Flask, React &amp; PostgreSQL.
     - Move routing / models to separate files in backend
     - Differentiate between components/pages
 
-- Pagination for music results
+
+
 - Trending music (most popular songs/albums in past week e.g. search reviews by past week and find which songs/albums are being positively reviewed the most)
     - Write backend endpoint
     - Display results on frontend
-- Pagination for review results
+- Display cards for music (use https://www.imdb.com/chart/top/?ref_=nv_mv_250 for inspo), maybe reduce # results per page to 10-15?
+
 - Trending reviews
+- Pagination for review results
+
+- Home page
+
 - User profile
     - User profile displays the user's reviews, liked songs, following, followers
         - handle edge cases like user viewing own profile / trying to follow self
@@ -24,11 +30,16 @@ Built with Flask, React &amp; PostgreSQL.
         - Popup that confirms delete review
     - Ability to manage account (delete account, change username)
     - personal "Statistics" for current user
+
 - Ability to search music
+
 - Move sync saved spotify songs button to saved songs page
+
 - Display saved songs in a nicer format (pagination + able to click on individual songs to unlike / see more info)
+
 - Spotify login
     - Display top tracks and recommend to add a review for them
+
 - Refine music recommendation system
     - Test more
     - Experiment with different techniques (using features of songs rather than user similarity)

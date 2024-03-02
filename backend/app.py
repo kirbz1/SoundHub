@@ -7,12 +7,13 @@ from dotenv import load_dotenv
 import os
 from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import ARRAY
+from sqlalchemy import ARRAY, desc
 from sqlalchemy.ext.mutable import MutableList
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyOAuth
 import pandas as pd
 import numpy as np
+import math
 
 
 # PostgreSQL Database credentials loaded from the .env file
@@ -219,17 +220,41 @@ def get_current_user_liked_songs():
 
 @app.route('/songs')
 def fetch_all_songs():
-    songs = Song.query.all()
-    songs = [{'id': song.id, 'title': song.title, 'artist': Artist.query.filter_by(id=song.artist_id).first().name, 'rating': song.rating} for song in songs]
-    songs = sorted(songs, key=lambda x: x['rating'], reverse=True)
+    page = int(request.args.get('page', 1))
+    per_page = int(request.args.get('per_page', 20))
+    songs = (db.session.query(Song, Artist.name)
+             .join(Artist, Song.artist_id == Artist.id)
+             .order_by(desc(Song.rating))
+             .paginate(page=page, per_page=per_page))
+    songs = [{'id': song[0].id, 'title': song[0].title, 'artist': song[1], 'rating': song[0].rating} for song in songs.items]
+    
+
     return jsonify(songs), 200
+
+@app.route('/songs/total_pages')
+def fetch_total_pages_songs():
+    song_count = db.session.query(Song).count()
+    per_page = 20
+    return jsonify(math.ceil(song_count/per_page))
+    
 
 @app.route('/albums')
 def fetch_all_albums():
-    albums = Album.query.all()
-    albums = [{'id': album.id, 'title': album.title, 'artist': Artist.query.filter_by(id=album.artist_id).first().name, 'rating': album.rating} for album in albums]
-    albums = sorted(albums, key=lambda x: x['rating'], reverse=True)
+    page = int(request.args.get('page', 1))
+    per_page = int(request.args.get('per_page', 20))
+    albums = (db.session.query(Album, Artist.name)
+             .join(Artist, Album.artist_id == Artist.id)
+             .order_by(desc(Album.rating))
+             .paginate(page=page, per_page=per_page))
+    albums = [{'id': album[0].id, 'title': album[0].title, 'artist': album[1], 'rating': album[0].rating} for album in albums.items]
+
     return jsonify(albums), 200
+
+@app.route('/albums/total_pages')
+def fetch_total_pages_albums():
+    album_count = db.session.query(Album).count()
+    per_page = 20
+    return jsonify(math.ceil(album_count/per_page))
 
 @app.route('/reviews', methods=['GET', 'POST'])
 def handle_get_post_reviews():
