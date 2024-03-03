@@ -5,9 +5,9 @@ from flask_bcrypt import Bcrypt
 from flask_session import Session
 from dotenv import load_dotenv
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import ARRAY, desc
+from sqlalchemy import ARRAY, desc, func
 from sqlalchemy.ext.mutable import MutableList
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyOAuth
@@ -256,6 +256,44 @@ def fetch_total_pages_albums():
     album_count = db.session.query(Album).count()
     per_page = 10
     return jsonify(math.ceil(album_count/per_page))
+
+@app.route('/trending')
+def fetch_all_trending_music():
+    one_week_ago = datetime.now() - timedelta(days=7)
+
+    top_songs_query = (db.session.query(
+        Song,
+        func.count(Review.id).label('num_reviews'),
+        Artist.name
+    ).join(Review, Review.song_id == Song.id)
+    .join(Artist, Artist.id == Song.artist_id)
+    .filter(Review.date >= one_week_ago)
+    .group_by(Song.id, Artist.name)
+    .order_by(func.count(Review.id).desc())
+    .limit(50)
+    .all())
+
+    top_albums_query = (db.session.query(
+        Album.title,
+        func.count(Review.id).label('num_reviews'),
+        Artist.name
+    ).join(Review, Review.album_id == Album.id)
+    .join(Artist, Artist.id == Album.artist_id)
+    .filter(Review.date >= one_week_ago)
+    .group_by(Album.id, Artist.name)
+    .order_by(func.count(Review.id).desc())
+    .limit(50)
+    .all())
+
+    results = top_songs_query + top_albums_query
+    results = sorted(results, key=lambda x: x[1])
+    
+    page = int(request.args.get('page', 1))
+    per_page = int(request.args.get('per_page', 10))
+    rank_start = (page - 1) * per_page + 1
+    results = [{'id': result[0].id, 'title': result[0].title, 'artist': result[2], 'rating': result[0].rating, 'imgurl': result[0].imgurl, 'rank': rank_start + i - 1} for i, result in enumerate(results, start=1)]
+    return jsonify(results), '200'
+
 
 @app.route('/reviews', methods=['GET', 'POST'])
 def handle_get_post_reviews():

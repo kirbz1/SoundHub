@@ -5,10 +5,6 @@ Built with Flask, React &amp; PostgreSQL.
 
 ## To-do (roughly ordered highest to lowest priority)
 
-- Trending music (most popular songs/albums in past week e.g. search reviews by past week and find which songs/albums are being positively reviewed the most)
-    - Write backend endpoint
-    - Display results on frontend
-
 - Display cards for music
     - Allow reviewing / viewing more info by clicking a menu item
     - Allow filtering options
