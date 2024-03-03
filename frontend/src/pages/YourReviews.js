@@ -244,7 +244,7 @@ const YourReviews = () => {
                         <FaTrash /> {/* Use the trash bin icon */}
                       </button>
                     </Card.Title>
-                    
+
                     <Card.Subtitle>By {review.user} ({review.date})</Card.Subtitle>
                     <Card.Text>{review.body}</Card.Text>
                     <Card.Subtitle>{review.num_likes} likes</Card.Subtitle>

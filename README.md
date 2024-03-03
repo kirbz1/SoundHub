@@ -5,11 +5,6 @@ Built with Flask, React &amp; PostgreSQL.
 
 ## To-do (roughly ordered highest to lowest priority)
 
-- Display cards for music
-    - Allow reviewing / viewing more info by clicking a menu item
-    - Allow filtering options
-        - Maybe by default display only top 250 songs/albums
-
 
     
 - Reviews
@@ -31,6 +26,20 @@ Built with Flask, React &amp; PostgreSQL.
         - Move sync saved spotify songs button to saved songs page
     - Ability to manage account (delete account, change username)
     - personal "Statistics" for current user
+
+- Display cards for music
+    - Allow reviewing / viewing more info by clicking a menu item
+        - Only display one dropdown menu per item at a time (e.g. open another one closes the current one)
+        - Album/song page that shows rating, blurb, other info like reviews, genre, artist, bla bla 
+        - Dynamic save/unsave option depending on whether user has the item saved
+        - Allow saving albums
+        - Ensure when posting a review, the relevant Song/Album object's rating / num_reviews is updated
+
+    - Allow filtering options
+        - Maybe by default display only top 250 songs/albums
+        - By genre
+        - By release year
+
 
 - Home page
 
